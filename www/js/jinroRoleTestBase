@@ -99,18 +99,17 @@ function updateParameter(number) {
   //選択した回答のパラメータ加減用配列を取得
   var parameterList = questionList[questionNo].parameterList;
   var parameter = parameterList[parseInt(number)-1];
-  console.log(parameter);
   //パラメータを加減する
-  for(var key in parameter) {
-    if(JSON.stringify(key) == "kyotyo") {
+  for(key in parameter) {
+    if(key == 'kyotyo') {
       //協調性
-      kyotyoPt += parseInt(parameter.key);
-    } else if (JSON.stringify(key) == "ishi") {
+      kyotyoPt += parseInt(parameter[key]);
+    } else if (key == 'ishi') {
       //意志力
-      ishiPt += parseInt(parameter.key);
-    } else if (JSON.stringify(key) == "poker") {
+      ishiPt += parseInt(parameter[key]);
+    } else if (key == 'poker') {
       //ポーカフェイス
-      pokerPt += parseInt(parameter.key);
+      pokerPt += parseInt(parameter[key]);
     } else {
       console.log("CSVのパラメータが不正");
     }
