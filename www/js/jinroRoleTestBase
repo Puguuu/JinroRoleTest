@@ -6,9 +6,12 @@ var questionList = getDataFromCsv();
 var parameterList = getParamFromCsv();
 // パラメータステータス
 var paramStatus = initParamStatus();
+// 役職ポイントリスト
+var jinroRolePointList = {};
 
 //パラメータの初期化
 function initParamStatus() {
+
   if (questionNo === 0) {
     var paramObj = {};
     for (var i=0;i<parameterList.length;i++) {
@@ -44,6 +47,48 @@ function getParamFromCsv() {
     }
   }
   return allData;
+}
+
+//パラメータステータスから役職を診断する
+function jinroRoleFinal() {
+  
+  //CSVから役職診断用パラメータを読み込む
+  var lines = getDataFromCsvBase("data/jinroRoleList.csv");
+
+  for (var i = 1; i < lines.length; i++) {
+    //役職ごとに計算
+    var wordSet = lines[i].split("|");
+    var param = wordSet[1].split(",");
+
+    var pointByRole = 0;//初期値
+    for (var k = 0; k < param.length; k++) {
+      //パラメータごとに計算
+      var paramCore = param[k].split(":");
+      var paramKey = paramCore[0];
+      var paramValue = paramCore[1];
+
+      //役職ポイントを計算
+      var nowParam = paramStatus[paramKey];
+      var culcPoint = parseInt(nowParam) * parseInt(paramValue);
+      pointByRole += culcPoint;
+    }
+    //役職名と役職ポイントを格納
+    jinroRolePointList[wordSet[0]] = pointByRole;
+  }
+}
+
+//役職ポイントリストを元に役職を決めて役職名を返す
+function defineRole() {
+  var defineRoleName = "";
+  var maxPoint = -100;//最高ポイント値
+  for(key in jinroRolePointList) {
+    if(maxPoint < jinroRolePointList[key]) {
+      //最高ポイント値を順に比較し、最高ポイントの役職名を返す
+      defineRoleName = key;
+      maxPoint = jinroRolePointList[key];
+    }
+  }
+  return defineRoleName;
 }
 
 //CSVを読み込んで質問、回答、回答パラメータを配列データとして返す
@@ -106,15 +151,27 @@ function showQuestion() {
     document.getElementById("question").innerHTML = "しゅーりょー";
     document.getElementById("selectAnswerForm").style.display = "none";
     document.getElementById("answerButton").style.display = "none";
+    //役職ポイントを計算する
+    jinroRoleFinal();
+    //役職名を取得する
+    var roleName = defineRole();
+    document.getElementById("roleNameShow").innerHTML = "あなたの適正は 【" + roleName + "】 です";
+    //パラメータを表示（テスト用）
+    var roleHtml = "<table  border='1'>";
+    for(key in jinroRolePointList) {
+      roleHtml += "<tr><td>" + key + "</td><td>" + jinroRolePointList[key] +"</td></tr>";
+    }
+    roleHtml += "</table>";
+    document.getElementById("roleListShow").innerHTML = roleHtml;
   }
   //パラメータを表示（テスト用）
   //kyotyo,ishi,poker,sekinin,buttle,confidence
-  var paramHtml = "<div>協調性：" + paramStatus.kyotyo +"</div><br>";
-  paramHtml += "<div>意志力：" + paramStatus.ishi +"</div><br>";
-  paramHtml += "<div>ポーカフェイス：" + paramStatus.poker +"</div><br>";
-  paramHtml += "<div>責任：" + paramStatus.sekinin +"</div><br>";
-  paramHtml += "<div>勝負強さ：" + paramStatus.buttle +"</div><br>";
-  paramHtml += "<div>自信：" + paramStatus.confidence +"</div><br>";
+  var paramHtml = "<table  border='1'><tr><td>協調性</td><td>" + paramStatus.kyotyo +"</td></tr>";
+  paramHtml += "<tr><td>意志力</td><td>" + paramStatus.ishi +"</td></tr>";
+  paramHtml += "<tr><td>ポーカフェイス</td><td>" + paramStatus.poker +"</td></tr>";
+  paramHtml += "<tr><td>責任</td><td>" + paramStatus.sekinin +"</td></tr>";
+  paramHtml += "<tr><td>勝負強さ</td><td>" + paramStatus.buttle +"</td></tr>";
+  paramHtml += "<tr><td>自信</td><td>" + paramStatus.confidence +"</td></tr></table>";
   document.getElementById("parameterShow").innerHTML = paramHtml;
 }
 
